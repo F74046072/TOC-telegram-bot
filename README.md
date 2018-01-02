@@ -32,8 +32,8 @@ Linux version 4.4.0-43-Microsoft (Microsoft@Microsoft.com) (gcc version 5.4.0 (G
 python3 server.py
 ```
 ### State Machine
-[原始圖片](https://i.imgur.com/ZIPwxpD.png)
-![Imgur](https://i.imgur.com/ZIPwxpD.png)
+[原始圖片](https://i.imgur.com/sYxAavh.png)
+![Imgur](https://i.imgur.com/sYxAavh.png)
 ### 功能
 * 表服務
     * persona介紹
