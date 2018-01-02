@@ -135,7 +135,7 @@ class TocMachine(GraphMachine):
                         [InlineKeyboardButton("女神異聞錄系列 中文維基", url="https://zh.wikipedia.org/wiki/女神異聞錄系列")]]
         reply_markup2 = InlineKeyboardMarkup(reply_keyboard2)
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
-        update.message.reply_photo(photo=open("img/morgana.jpg", "rb"), reply_markup=reply_markup2) # 摩兒迦納
+        update.message.reply_photo(photo="https://i.imgur.com/vzm6pU4.jpg", reply_markup=reply_markup2) # 摩兒迦納
     def intro_repeat(self, bot, update): # 不會繼續forward
         return False
     # 裏
