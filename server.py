@@ -94,7 +94,6 @@ class TocMachine(GraphMachine):
                     'trigger': 'restart',
                     'source': [
                         'welcome',
-                        'entry',
                         'outside',
                         'intro',
                         'slot',
@@ -155,14 +154,12 @@ class TocMachine(GraphMachine):
         func = TocFunction()
         name = func.slot()
         update.message.reply_text("你所抽到的塔羅牌(角色)是... " + name)
-        path = "img/" + name + ".png"
+        path = "img/" + name + ".png" # 對應檔案路徑
         reply_keyboard = [["角色抽抽樂"],
                         ["返回", "重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
         update.message.reply_photo(photo=open(path, "rb"), reply_markup=reply_markup)
-    # def slot_repeat(self, bot, update): # 不會繼續forward
-    #     return False
     # 裏
     def going_inside(self, bot, update):
         print("檢查inside:" + update.message.text)
@@ -177,7 +174,7 @@ class TocMachine(GraphMachine):
     # 選擇裏服務
     def going_service(self, bot, update):
         print("檢查service:" + update.message.text.lower())
-        if "persona" == update.message.text.lower():
+        if "persona" == update.message.text.lower(): # 通關密語
             return True
         else:
             self.wrong(bot, update) # 答錯直接跳至outside
