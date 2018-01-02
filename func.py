@@ -1,10 +1,11 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
+import random
 
 class TocFunction():
     def google(self, key, num):
-        driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe')
-        driver.get('http://www.google.com/xhtml') # google搜尋
+        driver = webdriver.Chrome(executable_path="chromedriver/chromedriver.exe")
+        driver.get("http://www.google.com/xhtml") # google搜尋
         search_box = driver.find_element_by_name('q')
         search_box.send_keys(key)
         search_box.submit()
@@ -20,8 +21,8 @@ class TocFunction():
         return result
 
     def youtube(self, key, num):
-        driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe')
-        driver.get('https://www.youtube.com') # google搜尋
+        driver = webdriver.Chrome(executable_path="chromedriver/chromedriver.exe")
+        driver.get("https://www.youtube.com") # google搜尋
         search_box = driver.find_element_by_name('search_query')
         search_box.send_keys(key) # 關鍵字
         search_box.submit()
@@ -37,9 +38,22 @@ class TocFunction():
         return result
 
     def screenshot(self, site):
-        driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe')
-        driver.get(site)
-        driver.maximize_window()
-        driver.save_screenshot('img/screenshot.png') # 保存截圖
-        driver.quit()
+        try:
+            driver = webdriver.Chrome(executable_path="chromedriver/chromedriver.exe")
+            driver.get(site)
+            driver.maximize_window()
+            driver.save_screenshot("img/screenshot.png") # 保存截圖
+            driver.quit()
+        except:
+            driver.quit()
+            return False
         return True
+
+    def slot(self):
+        character = ["女帝（奧村春）", "女教皇（新島真）", "太陽（吉田寅之助）", "月（三島由輝）",
+                "正義（明智吾郎）", "刑死者（岩井宗久）", "死神（武見妙）", "命運（御船千早）",
+                "法王（佐倉惣治郎）", "星（東鄉一二三）", "皇帝（喜多川祐介）", "剛毅（雙子）",
+                "惡魔（大宅一子）", "塔（織田信也）", "愚者（主角）", "節制（川上貞代）",
+                "審判（新島冴）", "戰車（坂本龍司）", "隱者（佐倉雙葉）", "魔術師（摩爾加納）", "戀愛（高卷杏）"]
+        num = random.randint(0,20)
+        return character[num]

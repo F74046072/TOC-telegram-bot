@@ -14,6 +14,7 @@ class TocMachine(GraphMachine):
                 'entry',
                 'outside',
                 'intro',
+                'slot',
                 'inside',
                 'service',
                 'google',
@@ -21,10 +22,6 @@ class TocMachine(GraphMachine):
                 'screenshot'
             ],
             transitions=[
-                {
-                    'trigger': 'forward',
-                    'source': 'welcome', 'dest': 'entry',
-                },
                 {
                     'trigger': 'forward', 'conditions': 'going_outside',
                     'source': 'entry', 'dest': 'outside'
@@ -34,8 +31,12 @@ class TocMachine(GraphMachine):
                     'source': 'outside', 'dest': 'intro'
                 },
                 {
-                    'trigger': 'forward', 'conditions': 'intro_repeat',
-                    'source': 'intro', 'dest': 'intro'
+                    'trigger': 'forward', 'conditions': 'going_slot',
+                    'source': 'intro', 'dest': 'slot'
+                },
+                {
+                    'trigger': 'forward', 'conditions': 'going_slot',
+                    'source': 'slot', 'dest': 'slot'
                 },
                 {
                     'trigger': 'forward', 'conditions': 'going_inside',
@@ -75,7 +76,15 @@ class TocMachine(GraphMachine):
                 },
                 {
                     'trigger': 'back',
-                    'source': ['outside', 'inside'], 'dest': 'entry'
+                    'source': 'intro', 'dest': 'outside'
+                },
+                {
+                    'trigger': 'back',
+                    'source': 'slot', 'dest': 'intro'
+                },
+                {
+                    'trigger': 'back',
+                    'source': 'service', 'dest': 'inside'
                 },
                 {
                     'trigger': 'back',
@@ -88,6 +97,7 @@ class TocMachine(GraphMachine):
                         'entry',
                         'outside',
                         'intro',
+                        'slot',
                         'inside',
                         'service',
                         'google',
@@ -116,7 +126,7 @@ class TocMachine(GraphMachine):
         print("進入outside")
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
         update.message.reply_photo(photo="https://i.imgur.com/6MvWENN.png") # 伊格爾
-        reply_keyboard = [["繼續", "返回", "重頭"]]
+        reply_keyboard = [["繼續", "重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
         update.message.reply_text("看來是\"普通的\"客戶啊...", reply_markup=reply_markup)
     # 介紹persona
@@ -125,7 +135,8 @@ class TocMachine(GraphMachine):
         return "繼續" == update.message.text
     def on_enter_intro(self, bot, update):
         print("進入intro")
-        reply_keyboard = [["重頭"]]
+        reply_keyboard = [["角色抽抽樂"],
+                        ["返回", "重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
         update.message.reply_text("想了解我們，就到以下網站吧~", reply_markup=reply_markup)
         reply_keyboard2 = [[InlineKeyboardButton("P5 PS4官方網站", url="http://persona5.jp/")],
@@ -136,8 +147,22 @@ class TocMachine(GraphMachine):
         reply_markup2 = InlineKeyboardMarkup(reply_keyboard2)
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
         update.message.reply_photo(photo="https://i.imgur.com/vzm6pU4.jpg", reply_markup=reply_markup2) # 摩兒迦納
-    def intro_repeat(self, bot, update): # 不會繼續forward
-        return False
+    # 角色塔羅牌抽抽樂
+    def going_slot(self, bot, update):
+        print("檢查slot:" + update.message.text)
+        return "角色抽抽樂" == update.message.text
+    def on_enter_slot(self, bot, update):
+        func = TocFunction()
+        name = func.slot()
+        update.message.reply_text("你所抽到的塔羅牌(角色)是... " + name)
+        path = "img/" + name + ".png"
+        reply_keyboard = [["角色抽抽樂"],
+                        ["返回", "重頭"]]
+        reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
+        bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
+        update.message.reply_photo(photo=open(path, "rb"), reply_markup=reply_markup)
+    # def slot_repeat(self, bot, update): # 不會繼續forward
+    #     return False
     # 裏
     def going_inside(self, bot, update):
         print("檢查inside:" + update.message.text)
@@ -146,7 +171,7 @@ class TocMachine(GraphMachine):
         print("進入inside")
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
         update.message.reply_photo(photo="https://i.imgur.com/6MvWENN.png") # 伊格爾
-        reply_keyboard = [["返回", "重頭"]]
+        reply_keyboard = [["重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
         update.message.reply_text("想必帶來了不錯的回答吧...", reply_markup=reply_markup)
     # 選擇裏服務
@@ -170,14 +195,17 @@ class TocMachine(GraphMachine):
         print("進入google")
         reply_keyboard = [["返回", "重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
-        update.message.reply_text("給我們一個關鍵字，後面接分號(;)加數字可以決定顯示資料數", reply_markup=reply_markup)
+        update.message.reply_text("給我們一個關鍵字以及需顯示資料數(用;分隔)", reply_markup=reply_markup)
     def google_repeat(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
         text = update.message.text
-        key = text.split(';', 1)[0] # 關鍵字
-        num = 3
-        num = text.split(';', 1)[1] # 資料數
-        num = int(num)
+        try:
+            key = text.split(';', 1)[0] # 關鍵字
+            num = text.split(';', 1)[1] # 資料數
+            num = int(num)
+        except:
+            update.message.reply_text("請檢查一下內容")
+            return True
         func = TocFunction()
         result = func.google(key, num)
         for i in range(num):
@@ -192,20 +220,25 @@ class TocMachine(GraphMachine):
         print("進入youtube")
         reply_keyboard = [["返回", "重頭"]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
-        update.message.reply_text("給我們一個關鍵字，後面接分號(;)加數字可以決定顯示資料數", reply_markup=reply_markup)
+        update.message.reply_text("給我們一個關鍵字以及需顯示資料數(用;分隔)", reply_markup=reply_markup)
     def youtube_repeat(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
         text = update.message.text
-        key = text.split(';', 1)[0] # 關鍵字
-        num = 3
-        num = text.split(';', 1)[1] # 資料數
-        num = int(num)
+        try:
+            key = text.split(';', 1)[0] # 關鍵字
+            num = text.split(';', 1)[1] # 資料數
+            num = int(num)
+        except:
+            update.message.reply_text("請檢查一下內容")
+            return True
         func = TocFunction()
         result = func.youtube(key, num)
         for i in range(num):
-            text = "[" + result[0][i] + "]" + "(" + result[1][i] + ")"
-            update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
-        update.message.reply_text("附帶一提，將網址的youtunbe加上to，將會自動導向至下載連結")
+            text = "[" + result[0][i] + "]" + "(" + result[1][i] + ")" # 用成markdown語法
+            download_link = result[1][i].replace("youtube", "youtubeto", 1) # 導向至下載頁面
+            reply_keyboard = [[InlineKeyboardButton("點此下載", url=download_link)]]
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
+            update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
         return True
     # 網頁截圖(無捲動)
     def going_screenshot(self, bot, update):
@@ -222,6 +255,8 @@ class TocMachine(GraphMachine):
         if func.screenshot(site):
             bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
             update.message.reply_photo(photo=open("img/screenshot.png", "rb"))
+        else:
+            update.message.reply_text("請檢查一下內容")
         return True
     # 畫state diagram
     def draw(self):
